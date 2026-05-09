@@ -5,6 +5,8 @@ next-env.d.ts
 out
 dist
 .vercel
+.private
+private
 .env
 .env*.local
 coverage
