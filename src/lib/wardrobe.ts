@@ -1,4 +1,5 @@
 import { itemCategories } from "@/lib/constants";
+import type { TryOnCategory } from "@/lib/providers/try-on/types";
 import type { Database } from "@/lib/supabase/database.types";
 
 export type ItemRow = Database["public"]["Tables"]["items"]["Row"];
@@ -67,4 +68,27 @@ export function getFileExtension(fileName: string, fallback = "jpg") {
   return extension && /^[a-z0-9]+$/.test(extension) && extension.length <= 5
     ? extension
     : fallback;
+}
+
+export function mapItemToTryOnCategory(
+  itemCategory: string
+): TryOnCategory | null {
+  switch (itemCategory) {
+    case "top":
+      return "tops";
+    case "bottom":
+      return "bottoms";
+    case "dress":
+      return "one-pieces";
+    case "outerwear":
+      return "outerwear";
+    case "shoes":
+      return "shoes";
+    case "accessory":
+      return "accessory";
+    case "bag":
+      return null;
+    default:
+      return null;
+  }
 }

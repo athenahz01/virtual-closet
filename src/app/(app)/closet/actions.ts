@@ -43,8 +43,13 @@ function getOptionalArray(formData: FormData, key: string) {
 }
 
 export async function createItem(formData: FormData): Promise<ActionResult> {
+  const uploadedPaths: string[] = [];
+  let supabase: Awaited<ReturnType<typeof createClient>> | null = null;
+
   try {
-    const { supabase, user } = await requireUser();
+    const context = await requireUser();
+    supabase = context.supabase;
+    const { user } = context;
     const originalPhoto = formData.get("originalPhoto");
 
     if (!(originalPhoto instanceof File) || originalPhoto.size === 0) {
@@ -60,14 +65,16 @@ export async function createItem(formData: FormData): Promise<ActionResult> {
     const { error: originalUploadError } = await supabase.storage
       .from("items")
       .upload(originalPath, originalPhoto, {
-      cacheControl: "3600",
-      contentType: originalPhoto.type || "image/jpeg",
-      upsert: false
-    });
+        cacheControl: "3600",
+        contentType: originalPhoto.type || "image/jpeg",
+        upsert: false
+      });
 
     if (originalUploadError) {
       throw new Error(originalUploadError.message);
     }
+
+    uploadedPaths.push(originalPath);
 
     if (processedPhoto instanceof File && processedPhoto.size > 0) {
       processedPath = `${user.id}/${itemId}/processed.png`;
@@ -82,6 +89,8 @@ export async function createItem(formData: FormData): Promise<ActionResult> {
       if (processedUploadError) {
         throw new Error(processedUploadError.message);
       }
+
+      uploadedPaths.push(processedPath);
     }
 
     const { error } = await supabase.from("items").insert({
@@ -101,13 +110,17 @@ export async function createItem(formData: FormData): Promise<ActionResult> {
     });
 
     if (error) {
-      return { ok: false, error: error.message };
+      throw new Error(error.message);
     }
 
     revalidatePath("/closet");
 
     return { ok: true, itemId };
   } catch (error) {
+    if (supabase && uploadedPaths.length > 0) {
+      await supabase.storage.from("items").remove(uploadedPaths);
+    }
+
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Could not save item."

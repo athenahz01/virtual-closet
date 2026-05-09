@@ -112,7 +112,7 @@ export default async function SettingsPage({
                 id="referencePhoto"
                 name="referencePhoto"
                 type="file"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
               />
             </div>
           </CardContent>

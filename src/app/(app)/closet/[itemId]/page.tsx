@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ChevronLeft, Pencil, Trash2 } from "lucide-react";
+import { ChevronLeft, Pencil } from "lucide-react";
 
-import { deleteItem } from "../actions";
+import { DeleteItemButton } from "@/components/closet/delete-item-button";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -90,13 +90,7 @@ export default async function ItemDetailPage({
               Edit
             </Link>
           </Button>
-          <form action={deleteItem}>
-            <input type="hidden" name="itemId" value={item.id} />
-            <Button type="submit" variant="outline">
-              <Trash2 className="mr-2 h-4 w-4" aria-hidden="true" />
-              Delete
-            </Button>
-          </form>
+          <DeleteItemButton itemId={item.id} />
         </div>
       </header>
 

@@ -23,7 +23,9 @@ const config: Config = {
     const percent = Math.round((current / total) * 100);
     worker.postMessage({
       type: "progress",
-      message: `Loading model ${percent}%`
+      message:
+        "First-time setup: downloading the cutout model (~80MB). " +
+        `This only happens once. ${percent}%`
     } satisfies WorkerResponse);
   }
 };
@@ -32,19 +34,23 @@ worker.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     worker.postMessage({
       type: "progress",
-      message: "Preparing cutout..."
+      message: "Removing background... this can take 10-30 seconds."
     } satisfies WorkerResponse);
 
     const blob = await removeBackground(event.data.file, config);
 
     worker.postMessage({ type: "success", blob } satisfies WorkerResponse);
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Background removal failed.";
+    const isModelLoadError =
+      /fetch|network|staticimgly|onnx|wasm|load/i.test(message);
+
     worker.postMessage({
       type: "error",
-      error:
-        error instanceof Error
-          ? error.message
-          : "Background removal failed."
+      error: isModelLoadError
+        ? "Couldn't load the cutout model."
+        : `Cutout failed: ${message}`
     } satisfies WorkerResponse);
   }
 };

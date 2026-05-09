@@ -23,6 +23,10 @@ import {
   seasonOptions
 } from "@/lib/constants";
 import { removeGarmentBackground } from "@/lib/image-processing/background-removal";
+import {
+  convertHeicToJpeg,
+  isHeicImage
+} from "@/lib/image-processing/heic-conversion";
 import { cn } from "@/lib/utils";
 
 export function AddItemForm() {
@@ -42,17 +46,27 @@ export function AddItemForm() {
     setOriginalFile(file);
     setProcessedFile(null);
     setIsProcessing(true);
-    setMessage("Removing background in your browser...");
+    setMessage(
+      isHeicImage(file)
+        ? "Converting iPhone photo..."
+        : "Removing background... this can take 10-30 seconds."
+    );
 
     try {
-      const processed = await removeGarmentBackground(file, setMessage);
+      const uploadReadyFile = isHeicImage(file)
+        ? await convertHeicToJpeg(file, setMessage)
+        : file;
+
+      setOriginalFile(uploadReadyFile);
+
+      const processed = await removeGarmentBackground(uploadReadyFile, setMessage);
       setProcessedFile(processed);
       setMessage("Cutout ready.");
     } catch (error) {
       setMessage(
         error instanceof Error
-          ? `Cutout failed: ${error.message}. You can still save the original.`
-          : "Cutout failed. You can still save the original."
+          ? `${error.message} You can still save the original photo and process it later.`
+          : "Couldn't load the cutout model. You can still save the original photo and process it later."
       );
     } finally {
       setIsProcessing(false);
@@ -67,6 +81,10 @@ export function AddItemForm() {
     }
 
     const formData = new FormData(formRef.current);
+
+    if (originalFile) {
+      formData.set("originalPhoto", originalFile);
+    }
 
     if (processedFile) {
       formData.set("processedPhoto", processedFile);
@@ -136,7 +154,7 @@ export function AddItemForm() {
             className="hidden"
             name="originalPhoto"
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
             required
             onChange={(event) => {
               const file = event.target.files?.[0];
@@ -173,7 +191,11 @@ export function AddItemForm() {
         </CardHeader>
         <CardContent className="space-y-6">
           <ItemFields />
-          <Button type="submit" disabled={isPending || isProcessing} className="w-full md:w-auto">
+          <Button
+            type="submit"
+            disabled={isPending || !originalFile}
+            className="w-full md:w-auto"
+          >
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
             ) : (
