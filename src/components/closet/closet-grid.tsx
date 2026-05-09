@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,8 +18,10 @@ import {
 type SortMode = "newest" | "most-worn" | "least-worn" | "az";
 
 export function ClosetGrid({
+  avatarReferenceUrl,
   items
 }: {
+  avatarReferenceUrl: string | null;
   items: ClosetItemView[];
 }) {
   const [query, setQuery] = useState("");
@@ -104,6 +106,7 @@ export function ClosetGrid({
           <h1 className="editorial-heading">Closet</h1>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <AvatarReferenceWidget avatarReferenceUrl={avatarReferenceUrl} />
           <Button asChild>
             <Link href="/closet/new">
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -255,6 +258,43 @@ export function ClosetGrid({
         <EmptyCloset hasItems={items.length > 0} />
       )}
     </div>
+  );
+}
+
+function AvatarReferenceWidget({
+  avatarReferenceUrl
+}: {
+  avatarReferenceUrl: string | null;
+}) {
+  return (
+    <Link
+      href="/avatar"
+      className="flex items-center gap-3 rounded-xl border border-border bg-cream px-3 py-2 shadow-soft transition duration-200 hover:-translate-y-0.5 hover:shadow-lifted"
+    >
+      <span className="relative flex h-12 w-12 overflow-hidden rounded-lg bg-parchment">
+        {avatarReferenceUrl ? (
+          <Image
+            alt="Avatar reference"
+            className="object-cover"
+            fill
+            sizes="48px"
+            src={avatarReferenceUrl}
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-terracotta">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+          </span>
+        )}
+      </span>
+      <span className="text-left">
+        <span className="block text-sm font-medium text-ink">
+          {avatarReferenceUrl ? "Avatar ready" : "Set up avatar"}
+        </span>
+        <span className="block text-xs text-muted-foreground">
+          {avatarReferenceUrl ? "Open reference studio" : "Generate reference"}
+        </span>
+      </span>
+    </Link>
   );
 }
 
