@@ -73,6 +73,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 | `NEXT_PUBLIC_SITE_URL` | Recommended | App origin for magic-link redirects. Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key for browser/server auth clients. |
+| `NEXT_PUBLIC_READY_PLAYER_ME_SUBDOMAIN` | Optional | Ready Player Me iframe subdomain. Defaults to `demo` for local testing. |
 | `TRYON_PROVIDER` | Phase 4 | Defaults to `fashn-v16` when try-on generation is implemented. |
 | `FASHN_API_KEY` | Phase 4 | Server-only FASHN API key. Never expose to client code. |
 
@@ -95,6 +96,13 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 - Closet masonry grid with category, season, color, search, and sort controls
 - Item detail pages with metadata, wear stats, and related outfits
 - Metadata edit and item delete actions
+
+## Phase 3 Scope
+
+- Ready Player Me avatar creator embedded in `/avatar`
+- Profile-level avatar URL storage with provider metadata
+- React Three Fiber + drei GLB viewer with orbit controls and idle movement
+- Decorative avatar widget in the Closet header
 
 ## Database Notes
 

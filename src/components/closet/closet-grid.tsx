@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 
+import { AvatarWidget } from "@/components/avatar/avatar-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { itemCategories, seasonOptions } from "@/lib/constants";
@@ -17,7 +18,13 @@ import {
 
 type SortMode = "newest" | "most-worn" | "least-worn" | "az";
 
-export function ClosetGrid({ items }: { items: ClosetItemView[] }) {
+export function ClosetGrid({
+  avatarUrl,
+  items
+}: {
+  avatarUrl: string | null;
+  items: ClosetItemView[];
+}) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [season, setSeason] = useState("all");
@@ -92,19 +99,22 @@ export function ClosetGrid({ items }: { items: ClosetItemView[] }) {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <header className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="mb-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
             Digital wardrobe
           </p>
           <h1 className="editorial-heading">Closet</h1>
         </div>
-        <Button asChild>
-          <Link href="/closet/new">
-            <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-            Add item
-          </Link>
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <AvatarWidget modelUrl={avatarUrl} />
+          <Button asChild>
+            <Link href="/closet/new">
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+              Add item
+            </Link>
+          </Button>
+        </div>
       </header>
 
       <section className="space-y-5 rounded-xl border border-border bg-cream/70 p-4 shadow-soft md:p-5">

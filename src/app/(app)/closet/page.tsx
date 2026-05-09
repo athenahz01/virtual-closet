@@ -31,6 +31,12 @@ export default async function ClosetPage() {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_asset_url")
+    .eq("id", user.id)
+    .single();
+
   const itemsWithImages: ClosetItemView[] = await Promise.all(
     (items ?? []).map(async (item) => ({
       ...item,
@@ -42,5 +48,10 @@ export default async function ClosetPage() {
     }))
   );
 
-  return <ClosetGrid items={itemsWithImages} />;
+  return (
+    <ClosetGrid
+      avatarUrl={profile?.avatar_asset_url ?? null}
+      items={itemsWithImages}
+    />
+  );
 }
