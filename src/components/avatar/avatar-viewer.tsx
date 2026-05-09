@@ -5,7 +5,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import {
   Center,
   ContactShadows,
-  Environment,
   Html,
   OrbitControls,
   useAnimations,
@@ -35,11 +34,12 @@ export function AvatarViewer({
     <div
       className={cn(
         "relative overflow-hidden rounded-xl border border-border bg-[radial-gradient(circle_at_50%_18%,#FDFBF7_0%,#EFE8DA_48%,#E8D5C4_100%)] shadow-soft",
-        compact ? "h-36 w-36" : "min-h-[460px] w-full md:min-h-[620px]",
+        compact ? "h-36 w-36" : "h-[460px] w-full md:h-[620px]",
         className
       )}
     >
       <Canvas
+        className="h-full w-full"
         camera={{
           position: compact ? [0, 1.35, 2.65] : [0, 1.45, 3.35],
           fov: compact ? 34 : 30
@@ -60,7 +60,6 @@ export function AvatarViewer({
           }
         >
           <AvatarModel compact={compact} url={modelUrl} />
-          {!compact ? <Environment preset="city" /> : null}
         </Suspense>
         <ContactShadows
           opacity={compact ? 0.18 : 0.24}
@@ -133,7 +132,7 @@ function AvatarFallback({
     <div
       className={cn(
         "flex flex-col items-center justify-center rounded-xl border border-border bg-parchment/75 text-center shadow-soft",
-        compact ? "h-36 w-36 p-4" : "min-h-[460px] w-full p-8 md:min-h-[620px]",
+        compact ? "h-36 w-36 p-4" : "h-[460px] w-full p-8 md:h-[620px]",
         className
       )}
     >
