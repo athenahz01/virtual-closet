@@ -7,7 +7,7 @@ Research date: May 9, 2026
 | Need | Pick | Why | Monthly cost (my usage) |
 | --- | --- | --- | --- |
 | AI try-on | FASHN API `tryon-v1.6`, behind a provider interface | Best balance of quality, speed, fashion-specific controls, commercial/personal clarity, direct REST API, and low setup. Native input is one person image plus one garment, so multi-garment outfits should be chained. | About $7.50 for 50 final outfits if the average outfit needs 2 garment passes; $3.75 if one garment pass each. Minimum top-up is $7.50. |
-| 3D avatar | Ready Player Me avatar creator + `@react-three/fiber` / `@react-three/drei` viewer | Free, selfie-based, full-body GLB, rigged/skinned, hosted CDN URL, React-friendly, and enough likeness for a stylized closet mascot. | $0 |
+| 3D avatar | Avaturn avatar creator + `@react-three/fiber` / `@react-three/drei` viewer | Free-tier developer subdomain, selfie-based avatar creation, GLB export through the official `@avaturn/sdk`, and enough likeness for a stylized closet mascot. | $0 |
 | Bg removal | Browser-side `@imgly/background-removal`; keep `@bunnio/rembg-web` as license-friendly alternate | Free, private, no server/API bill, works directly in the upload flow. AGPL is acceptable for this personal app; if closed commercial use ever matters, swap. | $0 for 150 items; optional paid rescue with fal BRIA at $0.018/image. |
 
 ## A. AI Try-On
@@ -82,23 +82,22 @@ No UI rewrite should be required: only the server route and provider implementat
 
 | Candidate | Cost | Output | Likeness / style | Rigging / poses | License / use | Setup effort |
 | --- | --- | --- | --- | --- | --- | --- |
-| Ready Player Me | [Free for developers and end users](https://docs.readyplayer.me/ready-player-me/faq). Commercial use is free for registered developers; non-commercial creator avatars are CC BY-NC-SA. | [GLB files from CDN](https://docs.readyplayer.me/ready-player-me/api-reference/rest-api), 2D PNG renders. | Selfie-to-avatar, stylized, recognizable enough for mascot. Not a precision body scan. | [Full-body avatars are rigged, skinned, game-ready GLB models](https://docs.readyplayer.me/ready-player-me/what-is-ready-player-me). | Personal use OK; commercial free after developer signup; no NFTs. | Low. Use iframe creator and save GLB URL. |
-| Avaturn | [Basic free: unlimited avatars/export; Pro $800/month for API/SDK/custom UX](https://avaturn.dev/pricing/). | [Exports GLB; FBX possible via conversion](https://docs.avaturn.me/docs/importing/unity/). | Often more realistic than RPM; selfie-based. | Rigged humanoid avatars; external ecosystem support. | Need review project terms before commercial use; Basic uses Avaturn account/UX. | Low for manual export, high/expensive for integrated creator. |
+| Avaturn | [Basic free: unlimited avatars/export; Pro $800/month for API/SDK/custom UX](https://avaturn.dev/pricing/). | [Exports GLB; FBX possible via conversion](https://docs.avaturn.me/docs/importing/unity/). | Selfie-based and more realistic than many stylized avatar generators. | Rigged humanoid avatars; external ecosystem support. | Need review project terms before commercial use; Basic uses Avaturn account/UX. | Low with developer subdomain and official SDK. |
 | Meshcapade | Pricing not public in surfaced docs. | SMPL-based avatars from [photos, videos, measurements, scans, text](https://meshcapade.com/faq/). | Best conceptual fit for accurate body proportions and measurements. | Strong body model / motion stack. | Enterprise/B2B style. | High, likely overkill. |
 | Didimo | B2B/digital-human product. Public pricing not clear in search results. | Head/character avatars, engine integrations. | Potentially strong facial likeness. | Good for real-time characters. | Needs vendor review. | Medium-high. |
 | In3D | Mobile scan/body avatar product; public developer path unclear. | 3D body/avatar assets. | Better body scan possibility. | Depends export. | Unclear. | Medium-high. |
 | VRoid Studio | Free desktop tool. | VRM/3D anime avatar. | Cute/stylized, but manual and not photo-to-avatar. | Good VRM humanoid rig. | Generally permissive for created models, subject to asset terms. | Medium, manual artist workflow. |
 | Tripo3D / Meshy.ai | Free credits + paid credits vary; current pricing changes often. | Image/text-to-3D meshes, usually GLB/FBX/OBJ. | Better for objects/creatures than likeness-preserving personal avatar. | Rigging may be separate/limited. | Check generated asset terms per plan. | Medium. |
 
-### Recommendation: Ready Player Me + React Three Fiber
+### Recommendation: Avaturn + React Three Fiber
 
-Use Ready Player Me for the avatar creator flow. It is the only option that cleanly hits the current requirements without spending hundreds of dollars: selfie-based, full-body, stylized, GLB output, rigged, browser-integrated, and free. It will not perfectly encode 169cm / 112 lbs / 33B-24-27, but the closet mascot does not need measurement-accurate garment simulation. Measurements should remain in the profile as try-on context and future avatar metadata, not as an RPM body-generation promise.
+Use Avaturn for the avatar creator flow. Avaturn keeps the important requirements intact for this personal app: selfie-based avatar creation, hosted creator UX, GLB export, and a clean official `@avaturn/sdk` integration. It will not perfectly encode 169cm / 112 lbs / 33B-24-27, but the closet mascot does not need measurement-accurate garment simulation. Measurements should remain in the profile as try-on context and future avatar metadata, not as an avatar-generation promise.
 
 For rendering, use `@react-three/fiber` + `@react-three/drei`, not `model-viewer`, as the main path. `model-viewer` is excellent for a simple GLB viewer and supports [camera controls, auto-rotate, poster images, and animation](https://web.dev/model-viewer/), but the app wants a living mascot widget, controlled lighting, subtle idle behavior, and possible animation blending. R3F/drei gives us direct access to [Three.js GLTFLoader assets and animations](https://threejs.org/docs/pages/GLTFLoader.html), plus React-native composition.
 
-### Fallback: Avaturn manual export
+### Fallback: manual GLB URL
 
-If Ready Player Me's face likeness feels too generic after testing with the reference photo, use Avaturn as a manual fallback: create/export a GLB outside the app on the free Basic tier and upload it to Supabase Storage. I would not use Avaturn Pro for this personal app unless the integrated creator UX becomes worth $800/month, which it currently does not.
+If the embedded creator fails or the SDK callback does not return an export URL, use the manual GLB URL field in the app. The avatar viewer only needs a reachable HTTPS `.glb` URL, so the provider can still be swapped without rewriting the viewer.
 
 ### Cute/alive behavior
 
@@ -110,8 +109,6 @@ If Ready Player Me's face likeness feels too generic after testing with the refe
 
 ### Sample outputs reviewed
 
-- [Ready Player Me full-body / half-body avatar docs](https://docs.readyplayer.me/ready-player-me/what-is-ready-player-me)
-- [Ready Player Me creator customization screenshots](https://docs.readyplayer.me/ready-player-me/customizing-guides/avatar-creator)
 - [Avaturn pricing and creator positioning](https://avaturn.dev/pricing/)
 - [Avaturn GLB import docs](https://docs.avaturn.me/docs/importing/unity/)
 - [model-viewer examples](https://modelviewer.dev/examples/animation/index.html)
@@ -193,7 +190,7 @@ Baseline personal usage:
 | Area | Assumption | Monthly cost |
 | --- | --- | --- |
 | AI try-on | 50 final outfit images/month, average 2 garment passes each, FASHN v1.6 at $0.075/pass | $7.50 |
-| 3D avatar | Ready Player Me avatar creation + local R3F viewer | $0 |
+| 3D avatar | Avaturn avatar creation + local R3F viewer | $0 |
 | Background removal | 150 wardrobe items processed in browser | $0 |
 | Optional bg-removal rescue | 10 hard images through fal BRIA at $0.018/image | $0.18 |
 

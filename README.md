@@ -73,7 +73,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 | `NEXT_PUBLIC_SITE_URL` | Recommended | App origin for auth redirects. Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key for browser/server auth clients. |
-| `NEXT_PUBLIC_READY_PLAYER_ME_SUBDOMAIN` | Optional | Ready Player Me iframe subdomain. Defaults to `demo` for local testing. |
+| `NEXT_PUBLIC_AVATURN_SUBDOMAIN` | Yes for Phase 3 | Avaturn developer subdomain for the embedded avatar creator. |
 | `TRYON_PROVIDER` | Phase 4 | Defaults to `fashn-v16` when try-on generation is implemented. |
 | `FASHN_API_KEY` | Phase 4 | Server-only FASHN API key. Never expose to client code. |
 
@@ -117,10 +117,22 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 
 ## Phase 3 Scope
 
-- Ready Player Me avatar creator embedded in `/avatar`
+- Avaturn avatar creator embedded in `/avatar`
 - Profile-level avatar URL storage with provider metadata
 - React Three Fiber + drei GLB viewer with orbit controls and idle movement
 - Decorative avatar widget in the Closet header
+
+## Avaturn Setup
+
+1. Sign up at [developer.avaturn.me](https://developer.avaturn.me).
+2. Find your subdomain in the developer dashboard.
+3. Add it to `.env.local`:
+
+   ```bash
+   NEXT_PUBLIC_AVATURN_SUBDOMAIN=<your-subdomain>
+   ```
+
+4. Restart `npm run dev` so the client bundle sees the new public env var.
 
 ## Database Notes
 

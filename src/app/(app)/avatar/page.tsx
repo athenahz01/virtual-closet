@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { RotateCw } from "lucide-react";
 
+import { AvaturnCreator } from "@/components/avatar/avaturn-creator";
 import { ClearAvatarButton } from "@/components/avatar/clear-avatar-button";
 import { AvatarViewer } from "@/components/avatar/avatar-viewer";
-import { ReadyPlayerMeCreator } from "@/components/avatar/ready-player-me-creator";
 import { hasSupabaseConfig } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 
@@ -101,7 +101,7 @@ export default async function AvatarPage({
         </div>
       </section>
 
-      <ReadyPlayerMeCreator currentAvatarUrl={avatarUrl} />
+      <AvaturnCreator currentAvatarUrl={avatarUrl} />
     </div>
   );
 }
