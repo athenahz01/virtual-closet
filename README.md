@@ -87,6 +87,15 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 - Sidebar shell: Closet, Avatar, Try-On, Outfits, Calendar, Settings
 - Cream/parchment visual system with Cormorant Garamond and Inter
 
+## Phase 2 Scope
+
+- Add item flow with drag/drop image selection
+- Browser-side `@imgly/background-removal` Web Worker cutouts
+- Original and processed garment image uploads to Supabase Storage
+- Closet masonry grid with category, season, color, search, and sort controls
+- Item detail pages with metadata, wear stats, and related outfits
+- Metadata edit and item delete actions
+
 ## Database Notes
 
 The migration creates a trigger on `auth.users` so the profile exists as soon as the first magic-link login completes. Defaults:
@@ -117,3 +126,5 @@ generations/<user-id>/<generation-id>.png
 The approved research lives at [docs/tooling-decisions.md](docs/tooling-decisions.md).
 
 Try-on is intentionally behind `TryOnProvider` in `src/lib/providers/try-on/types.ts`, with `fashn-v16` as the first planned provider.
+
+Private local reference images can live under `private/`; that folder is ignored and should not be committed.

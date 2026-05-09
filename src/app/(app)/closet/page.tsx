@@ -1,11 +1,46 @@
-import { PhasePlaceholder } from "@/components/phase-placeholder";
+import { redirect } from "next/navigation";
 
-export default function ClosetPage() {
-  return (
-    <PhasePlaceholder
-      title="Your wardrobe begins here."
-      description="Phase 1 is the private shell: auth, profile, storage, and the editorial design language. The clothing grid arrives in Phase 2."
-      nextLabel="Set up profile"
-    />
+import { ClosetGrid } from "@/components/closet/closet-grid";
+import { hasSupabaseConfig } from "@/lib/env";
+import { createClient } from "@/lib/supabase/server";
+import {
+  createSignedImageUrl,
+  getPreferredImagePath,
+  type ClosetItemView
+} from "@/lib/wardrobe";
+
+export const dynamic = "force-dynamic";
+
+export default async function ClosetPage() {
+  if (!hasSupabaseConfig()) {
+    redirect("/login");
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: items } = await supabase
+    .from("items")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  const itemsWithImages: ClosetItemView[] = await Promise.all(
+    (items ?? []).map(async (item) => ({
+      ...item,
+      imageSrc: await createSignedImageUrl(
+        supabase.storage,
+        "items",
+        getPreferredImagePath(item)
+      )
+    }))
   );
+
+  return <ClosetGrid items={itemsWithImages} />;
 }
