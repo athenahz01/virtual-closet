@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 
+// TODO(Phase 6): dynamic-import this with ssr:false so Three.js stays out of
+// the closet grid bundle when the avatar widget is not visible.
 import { AvatarWidget } from "@/components/avatar/avatar-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

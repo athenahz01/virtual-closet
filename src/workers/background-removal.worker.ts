@@ -10,6 +10,7 @@ type WorkerResponse =
   | { type: "error"; error: string };
 
 const worker = self;
+let modelLoaded = false;
 
 const config: Config = {
   output: {
@@ -21,6 +22,19 @@ const config: Config = {
     }
 
     const percent = Math.round((current / total) * 100);
+
+    if (current >= total) {
+      if (!modelLoaded) {
+        modelLoaded = true;
+        worker.postMessage({
+          type: "progress",
+          message: "Removing background... this can take 10-30 seconds."
+        } satisfies WorkerResponse);
+      }
+
+      return;
+    }
+
     worker.postMessage({
       type: "progress",
       message:
@@ -32,10 +46,12 @@ const config: Config = {
 
 worker.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
-    worker.postMessage({
-      type: "progress",
-      message: "Removing background... this can take 10-30 seconds."
-    } satisfies WorkerResponse);
+    if (modelLoaded) {
+      worker.postMessage({
+        type: "progress",
+        message: "Removing background... this can take 10-30 seconds."
+      } satisfies WorkerResponse);
+    }
 
     const blob = await removeBackground(event.data.file, config);
 

@@ -23,9 +23,14 @@ function getExportedAvatarUrl(data: unknown) {
 
   const message = payload as {
     eventName?: string;
+    source?: string;
     type?: string;
     data?: { url?: string };
   };
+
+  if (message.source !== "readyplayerme") {
+    return null;
+  }
 
   if (
     message.eventName === "v1.avatar.exported" ||
@@ -83,7 +88,10 @@ export function ReadyPlayerMeCreator({
       if (
         payload &&
         typeof payload === "object" &&
-        (payload as { eventName?: string }).eventName === "v1.frame.ready"
+        (payload as { eventName?: string; source?: string }).source ===
+          "readyplayerme" &&
+        (payload as { eventName?: string; source?: string }).eventName ===
+          "v1.frame.ready"
       ) {
         subscribeToExport();
       }
@@ -134,6 +142,10 @@ export function ReadyPlayerMeCreator({
         <form action={saveReadyPlayerMeAvatar} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="avatarUrl">Avatar GLB URL</Label>
+            <p className="text-xs leading-5 text-muted-foreground">
+              If the embedded creator gets stuck after "Continue without
+              signup", use this field instead.
+            </p>
             <Input
               id="avatarUrl"
               name="avatarUrl"
@@ -162,6 +174,9 @@ export function ReadyPlayerMeCreator({
             Open creator
           </a>
         </Button>
+        <p className="text-xs leading-5 text-muted-foreground">
+          Opens in a new tab; copy the GLB URL into the field above when done.
+        </p>
 
         <div
           className={cn(

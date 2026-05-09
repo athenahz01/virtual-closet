@@ -1,7 +1,8 @@
-import { Camera, Ruler } from "lucide-react";
+import { Ruler } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { updateSettings } from "./actions";
+import { ReferencePhotoUpload } from "@/components/settings/reference-photo-upload";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -77,46 +78,7 @@ export default async function SettingsPage({
       ) : null}
 
       <form action={updateSettings} className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <Card className="overflow-hidden bg-cream/75">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-terracotta-soft text-terracotta">
-                <Camera className="h-4 w-4" aria-hidden="true" />
-              </span>
-              <div>
-                <CardTitle>Reference Photo</CardTitle>
-                <CardDescription>
-                  Used later for avatar likeness and AI try-on identity.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="aspect-[4/5] overflow-hidden rounded-xl border border-border bg-parchment shadow-soft">
-              {referencePreviewUrl ? (
-                <img
-                  src={referencePreviewUrl}
-                  alt="Current reference"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center px-8 text-center text-sm leading-6 text-muted-foreground">
-                  Upload a reference photo. This is used for avatar likeness
-                  and AI try-on identity.
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="referencePhoto">Upload photo</Label>
-              <Input
-                id="referencePhoto"
-                name="referencePhoto"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/heic,image/heif"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <ReferencePhotoUpload referencePreviewUrl={referencePreviewUrl} />
 
         <Card className="bg-cream/75">
           <CardHeader>
