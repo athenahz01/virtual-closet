@@ -9,6 +9,7 @@ dist
 private
 .env
 .env*.local
+.env.local
 coverage
 *.tsbuildinfo
 supabase/.branches
