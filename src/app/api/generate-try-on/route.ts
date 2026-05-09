@@ -127,7 +127,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const garments = items
+  const orderedItems = itemIds
+    .map((itemId) => items.find((item) => item.id === itemId))
+    .filter((item): item is (typeof items)[number] => Boolean(item));
+  const garments = orderedItems
     .map((item) => {
       const category = mapItemToTryOnCategory(item.category);
 
