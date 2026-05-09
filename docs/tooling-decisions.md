@@ -2,12 +2,20 @@
 
 Research date: May 9, 2026
 
+## Pivot 2026-05-09
+
+Replaced the 3D avatar path (Ready Player Me / Avaturn) and FASHN try-on
+provider plan with Google Nano Banana Pro, exposed as Gemini 3 Pro Image. The
+app now uses one image-generation provider for both clean studio avatar
+references and outfit try-on images. See the commit log for implementation
+context.
+
 ## Summary table
 
 | Need | Pick | Why | Monthly cost (my usage) |
 | --- | --- | --- | --- |
-| AI try-on | FASHN API `tryon-v1.6`, behind a provider interface | Best balance of quality, speed, fashion-specific controls, commercial/personal clarity, direct REST API, and low setup. Native input is one person image plus one garment, so multi-garment outfits should be chained. | About $7.50 for 50 final outfits if the average outfit needs 2 garment passes; $3.75 if one garment pass each. Minimum top-up is $7.50. |
-| 3D avatar | Avaturn avatar creator + `@react-three/fiber` / `@react-three/drei` viewer | Free-tier developer subdomain, selfie-based avatar creation, GLB export through the official `@avaturn/sdk`, and enough likeness for a stylized closet mascot. | $0 |
+| AI try-on | Google Nano Banana Pro (`gemini-3-pro-image-preview`), behind a provider interface | One provider can generate the neutral avatar references and photoreal outfit try-on images from reference photos plus garment photos. | $0 within AI Studio free tier; about $6.70 for 50 paid images at $0.134/image. |
+| Avatar reference | Google Nano Banana Pro (`gemini-3-pro-image-preview`) | Generates clean studio reference images from the Settings selfie, replacing the 3D mascot path. | $0 within AI Studio free tier; about $0.134/image beyond that. |
 | Bg removal | Browser-side `@imgly/background-removal`; keep `@bunnio/rembg-web` as license-friendly alternate | Free, private, no server/API bill, works directly in the upload flow. AGPL is acceptable for this personal app; if closed commercial use ever matters, swap. | $0 for 150 items; optional paid rescue with fal BRIA at $0.018/image. |
 
 ## A. AI Try-On
@@ -30,35 +38,33 @@ Research date: May 9, 2026
 | Hugging Face Spaces / Inference Endpoints | ZeroGPU can be free but quota-limited: [3.5 min/day free account, 25 min/day Pro, then $1/10 GPU-min](https://huggingface.co/docs/hub/main/spaces-zerogpu). Dedicated endpoints start around [GPU T4 $0.50/hr, A10G $1/hr](https://huggingface.co/docs/inference-endpoints/en/support/pricing). | Good for demos, not ideal for a private production API unless paid endpoint. | Depends on model. | Spaces are easiest for demos; endpoints are production. | Depends on model. | Medium. |
 | RunPod / Modal self-host | RunPod serverless [A4000 flex $0.00016/sec, L4/A5000/3090 $0.00019/sec, A100 $0.00076/sec](https://docs.runpod.io/serverless/pricing). Modal has [$30/month free credits and per-second GPUs](https://modal.com/pricing?trk=public_post-text). | Best way to keep fallback cost near zero if using FASHN v1.5. | Depends on model. | Need container/service and cold-start handling. | Depends on model. | Medium-high. |
 
-### Recommendation: FASHN API `tryon-v1.6`
+### Recommendation: Google Nano Banana Pro
 
-Use FASHN API `tryon-v1.6` as the first implementation. It is not literally free, but it is low enough for the intended personal workload: the $7.50 minimum top-up covers 100 credits, which maps well to about 50 final outfits if most outfits require two chained garment passes. FASHN also has the clearest current fashion-specific controls: category selection, flat-lay vs model garment hints, segmentation-free mode, output format, speed/quality mode, and optional base64 output for privacy.
-
-The main weakness is multi-garment support. The endpoint takes one garment image, so the app should compose outfits by chaining calls in a deterministic order: bottoms first, then top/dress, then outerwear; shoes/accessories should be marked "try-on experimental" because most VTON models are less reliable there. The provider abstraction in the build spec is exactly the right mitigation: store `provider`, `prompt_payload`, `cost_usd`, and the per-step intermediate URLs in `generations`.
+Use Google Nano Banana Pro as the active try-on implementation. The pivot
+consolidates avatar reference generation and outfit generation into one image
+model, which is simpler than keeping separate avatar and virtual try-on
+providers. The historical bakeoff table above remains as background research,
+but the app no longer starts from a dedicated VTON API.
 
 Implementation default:
 
 ```ts
-type TryOnProviderName = "fashn-v16" | "modal-fashn-v15" | "google-vto" | "kling-vto";
-
-interface TryOnProvider {
-  name: TryOnProviderName;
-  generate(input: {
-    personImage: string;
-    garmentImages: Array<{ url: string; category: "tops" | "bottoms" | "one-pieces" | "outerwear" | "shoes" | "accessory" }>;
-    pose: string;
-    background: string;
-  }): Promise<{ imageUrl: string; cost: number; providerPayload: unknown }>;
-}
+type ImageGenProviderName = "gemini-nano-banana-pro";
 ```
 
-### Fallback: self-hosted FASHN VTON v1.5 on Modal
+The provider accepts the user's generated reference images plus selected garment
+photos. The app-level contract stays provider-shaped, but the old single-garment
+chaining model is removed.
 
-The best fallback is FASHN VTON v1.5 on Modal, because it is Apache-2.0, can run around 8GB VRAM, and Modal's $30/month free credits should cover this personal volume if the service is not kept warm all day. The tradeoff is engineering work and lower output resolution than hosted v1.6. I would not make this the first build path because the app has plenty of product surface area to build; paying a few dollars for hosted try-on is worth the saved time.
+### Historical fallback: self-hosted VTON
+
+If Gemini proves unreliable for clothing fidelity, revisit self-hosted or hosted
+VTON models. Keep this as a bakeoff idea, not active app architecture.
 
 ### Swap path
 
-Keep a single `TryOnProvider` interface and make the provider configurable with `TRYON_PROVIDER`. If FASHN pricing rises above about $0.10 per pass, or if multi-garment chaining produces weak outfit results, run a 20-image bakeoff against:
+Keep a single Gemini image-generation interface for now. If pricing or quality
+changes, run a 20-image bakeoff against:
 
 1. Kling/PiAPI for `upper_input` + `lower_input` in one call.
 2. Google Vertex Virtual Try-On for lower per-image price.
@@ -76,7 +82,7 @@ No UI rewrite should be required: only the server route and provider implementat
 - [fal Kling Kolors VTO sample](https://fal.ai/models/fal-ai/kling/v1-5/kolors-virtual-try-on)
 - [fal Leffa VTO sample](https://fal.ai/models/fal-ai/leffa/virtual-tryon)
 
-## B. 3D Avatar
+## B. Avatar Reference Generation
 
 ### Options evaluated
 
@@ -89,23 +95,22 @@ No UI rewrite should be required: only the server route and provider implementat
 | VRoid Studio | Free desktop tool. | VRM/3D anime avatar. | Cute/stylized, but manual and not photo-to-avatar. | Good VRM humanoid rig. | Generally permissive for created models, subject to asset terms. | Medium, manual artist workflow. |
 | Tripo3D / Meshy.ai | Free credits + paid credits vary; current pricing changes often. | Image/text-to-3D meshes, usually GLB/FBX/OBJ. | Better for objects/creatures than likeness-preserving personal avatar. | Rigging may be separate/limited. | Check generated asset terms per plan. | Medium. |
 
-### Recommendation: Avaturn + React Three Fiber
+### Recommendation: Google Nano Banana Pro
 
-Use Avaturn for the avatar creator flow. Avaturn keeps the important requirements intact for this personal app: selfie-based avatar creation, hosted creator UX, GLB export, and a clean official `@avaturn/sdk` integration. It will not perfectly encode 169cm / 112 lbs / 33B-24-27, but the closet mascot does not need measurement-accurate garment simulation. Measurements should remain in the profile as try-on context and future avatar metadata, not as an avatar-generation promise.
+Use Google Nano Banana Pro / Gemini 3 Pro Image for the avatar reference flow. The app now generates clean studio reference images from the Settings selfie and measurements, then feeds those same reference images into try-on generation. This removes the separate 3D avatar provider and GLB viewer.
 
-For rendering, use `@react-three/fiber` + `@react-three/drei`, not `model-viewer`, as the main path. `model-viewer` is excellent for a simple GLB viewer and supports [camera controls, auto-rotate, poster images, and animation](https://web.dev/model-viewer/), but the app wants a living mascot widget, controlled lighting, subtle idle behavior, and possible animation blending. R3F/drei gives us direct access to [Three.js GLTFLoader assets and animations](https://threejs.org/docs/pages/GLTFLoader.html), plus React-native composition.
+The avatar page now renders generated reference images, not a 3D model. No 3D
+viewer or embedded avatar creator is part of the active plan.
 
-### Fallback: manual GLB URL
+### Fallback: manual regenerated reference photo
 
-If the embedded creator fails or the SDK callback does not return an export URL, use the manual GLB URL field in the app. The avatar viewer only needs a reachable HTTPS `.glb` URL, so the provider can still be swapped without rewriting the viewer.
+If a generated reference image is not faithful enough, regenerate from the same Settings selfie or upload a cleaner reference photo before regenerating.
 
-### Cute/alive behavior
+### Reference-image behavior
 
-- Slow auto-rotate when idle; pause on pointer interaction.
-- Subtle breathing: tiny sinusoidal torso/root scale or a real idle animation if present.
-- Blink if the GLB has eye/morph targets; otherwise skip rather than fake it badly.
-- Use [Mixamo animations](https://helpx.adobe.com/creative-cloud/faq/mixamo-faq.html) for optional idle poses; Adobe states Mixamo is free with an Adobe ID and royalty-free for personal, commercial, and nonprofit projects.
-- Use warm studio lighting: `Environment`, soft contact shadows, parchment floor plane, no heavy 3D scene chrome.
+- Generate a neutral studio front reference first.
+- Keep 1-4 reference paths on the profile for future front/back/side workflows.
+- Use the first reference as the closet header thumbnail.
 
 ### Sample outputs reviewed
 
@@ -189,9 +194,12 @@ Baseline personal usage:
 
 | Area | Assumption | Monthly cost |
 | --- | --- | --- |
-| AI try-on | 50 final outfit images/month, average 2 garment passes each, FASHN v1.6 at $0.075/pass | $7.50 |
-| 3D avatar | Avaturn avatar creation + local R3F viewer | $0 |
+| AI try-on | 50 final outfit images/month, Nano Banana Pro at $0.134/image beyond free quota | $6.70 |
+| Avatar reference | 1-4 generated reference images, Nano Banana Pro at $0.134/image beyond free quota | $0.13-$0.54 |
 | Background removal | 150 wardrobe items processed in browser | $0 |
 | Optional bg-removal rescue | 10 hard images through fal BRIA at $0.018/image | $0.18 |
 
-Expected baseline: **$7.50/month** for the AI tooling above, not counting Supabase/Vercel platform usage. If every try-on is a single garment pass, the true credit usage is $3.75/month, but FASHN's on-demand minimum purchase is $7.50. If try-on is moved to Modal-hosted FASHN v1.5 and stays within Modal's free credits, AI tooling can be near $0/month at the cost of more setup and lower resolution.
+Expected baseline: **$0/month inside AI Studio's free quota**, not counting
+Supabase/Vercel platform usage. If usage moves to paid Gemini API pricing, 50
+try-ons plus a small reference set is about **$7.24/month** at the current
+planning estimate.

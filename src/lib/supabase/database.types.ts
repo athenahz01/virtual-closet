@@ -180,8 +180,7 @@ export type Database = {
       };
       profiles: {
         Row: {
-          avatar_asset_url: string | null;
-          avatar_provider: string | null;
+          avatar_reference_paths: string[] | null;
           created_at: string | null;
           display_name: string | null;
           height_cm: number | null;
@@ -191,8 +190,7 @@ export type Database = {
           weight_lbs: number | null;
         };
         Insert: {
-          avatar_asset_url?: string | null;
-          avatar_provider?: string | null;
+          avatar_reference_paths?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
           height_cm?: number | null;
@@ -202,8 +200,7 @@ export type Database = {
           weight_lbs?: number | null;
         };
         Update: {
-          avatar_asset_url?: string | null;
-          avatar_provider?: string | null;
+          avatar_reference_paths?: string[] | null;
           created_at?: string | null;
           display_name?: string | null;
           height_cm?: number | null;

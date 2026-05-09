@@ -75,11 +75,11 @@ export function mapItemToTryOnCategory(
 ): TryOnCategory | null {
   switch (itemCategory) {
     case "top":
-      return "tops";
+      return "top";
     case "bottom":
-      return "bottoms";
+      return "bottom";
     case "dress":
-      return "one-pieces";
+      return "dress";
     case "outerwear":
       return "outerwear";
     case "shoes":

@@ -4,7 +4,7 @@ export default function TryOnPage() {
   return (
     <PhasePlaceholder
       title="Try-on atelier."
-      description="The FASHN provider interface is ready for the later generation route. The builder itself ships in Phase 4."
+      description="The old FASHN stub has been removed. Gemini try-on generation lands in the next checkpoints."
     />
   );
 }

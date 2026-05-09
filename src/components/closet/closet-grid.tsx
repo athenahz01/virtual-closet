@@ -5,9 +5,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 
-// TODO(Phase 6): dynamic-import this with ssr:false so Three.js stays out of
-// the closet grid bundle when the avatar widget is not visible.
-import { AvatarWidget } from "@/components/avatar/avatar-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { itemCategories, seasonOptions } from "@/lib/constants";
@@ -21,10 +18,8 @@ import {
 type SortMode = "newest" | "most-worn" | "least-worn" | "az";
 
 export function ClosetGrid({
-  avatarUrl,
   items
 }: {
-  avatarUrl: string | null;
   items: ClosetItemView[];
 }) {
   const [query, setQuery] = useState("");
@@ -109,7 +104,6 @@ export function ClosetGrid({
           <h1 className="editorial-heading">Closet</h1>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <AvatarWidget modelUrl={avatarUrl} />
           <Button asChild>
             <Link href="/closet/new">
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
