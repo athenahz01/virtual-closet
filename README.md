@@ -70,16 +70,34 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 
 | Name | Required | Purpose |
 | --- | --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Recommended | App origin for magic-link redirects. Defaults to `http://localhost:3000`. |
+| `NEXT_PUBLIC_SITE_URL` | Recommended | App origin for auth redirects. Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key for browser/server auth clients. |
 | `NEXT_PUBLIC_READY_PLAYER_ME_SUBDOMAIN` | Optional | Ready Player Me iframe subdomain. Defaults to `demo` for local testing. |
 | `TRYON_PROVIDER` | Phase 4 | Defaults to `fashn-v16` when try-on generation is implemented. |
 | `FASHN_API_KEY` | Phase 4 | Server-only FASHN API key. Never expose to client code. |
 
+## Google OAuth Setup
+
+1. Create OAuth credentials in the [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+2. Add this authorized redirect URI:
+
+   ```text
+   https://<project-ref>.supabase.co/auth/v1/callback
+   ```
+
+3. In Supabase, go to Auth -> Providers, enable Google, and paste the Google Client ID and Client Secret.
+4. In Supabase, go to Auth -> URL Configuration and set the Site URL plus any local/production Redirect URLs, such as:
+
+   ```text
+   http://localhost:3000/auth/callback
+   http://localhost:3001/auth/callback
+   https://your-vercel-domain.vercel.app/auth/callback
+   ```
+
 ## Phase 1 Scope
 
-- Magic-link authentication
+- Google OAuth authentication
 - Auto-created profile row on first login
 - Settings page for reference photo and measurements
 - Supabase tables: `profiles`, `items`, `outfits`, `generations`
@@ -106,7 +124,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 
 ## Database Notes
 
-The migration creates a trigger on `auth.users` so the profile exists as soon as the first magic-link login completes. Defaults:
+The migration creates a trigger on `auth.users` so the profile exists as soon as the first Google OAuth login completes. Defaults:
 
 ```json
 {
