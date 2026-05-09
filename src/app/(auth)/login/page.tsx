@@ -15,11 +15,12 @@ import { hasSupabaseConfig } from "@/lib/env";
 
 export const dynamic = "force-dynamic";
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams
 }: {
-  searchParams?: { message?: string };
+  searchParams: Promise<{ message?: string }>;
 }) {
+  const params = await searchParams;
   const isConfigured = hasSupabaseConfig();
 
   return (
@@ -53,9 +54,9 @@ export default function LoginPage({
               Send magic link
             </Button>
           </form>
-          {searchParams?.message ? (
+          {params.message ? (
             <p className="mt-5 rounded-lg border border-border bg-parchment px-3 py-2 text-sm text-muted-foreground">
-              {searchParams.message}
+              {params.message}
             </p>
           ) : null}
           {!isConfigured ? (

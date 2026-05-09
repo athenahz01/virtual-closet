@@ -1,4 +1,5 @@
 import { Camera, Ruler } from "lucide-react";
+import { redirect } from "next/navigation";
 
 import { updateSettings } from "./actions";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { defaultProfile } from "@/lib/constants";
+import { hasSupabaseConfig } from "@/lib/env";
 import { getMeasurementValue } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,8 +22,14 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage({
   searchParams
 }: {
-  searchParams?: { saved?: string; message?: string };
+  searchParams: Promise<{ saved?: string; message?: string }>;
 }) {
+  const params = await searchParams;
+
+  if (!hasSupabaseConfig()) {
+    redirect("/login");
+  }
+
   const supabase = await createClient();
   const {
     data: { user }
@@ -55,16 +63,16 @@ export default async function SettingsPage({
           </p>
           <h1 className="editorial-heading">Settings</h1>
         </div>
-        {searchParams?.saved ? (
+        {params.saved ? (
           <p className="rounded-full border border-border bg-parchment px-4 py-2 text-sm text-muted-foreground">
             Profile saved.
           </p>
         ) : null}
       </header>
 
-      {searchParams?.message ? (
+      {params.message ? (
         <p className="rounded-lg border border-border bg-parchment px-4 py-3 text-sm text-muted-foreground">
-          {searchParams.message}
+          {params.message}
         </p>
       ) : null}
 
@@ -93,9 +101,8 @@ export default async function SettingsPage({
                 />
               ) : (
                 <div className="flex h-full items-center justify-center px-8 text-center text-sm leading-6 text-muted-foreground">
-                  Upload the reference photo when you are ready. I do not see
-                  the attachment in the workspace yet, so this field is ready
-                  for it.
+                  Upload a reference photo. This is used for avatar likeness
+                  and AI try-on identity.
                 </div>
               )}
             </div>

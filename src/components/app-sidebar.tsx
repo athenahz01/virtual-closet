@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   CalendarDays,
   GalleryVerticalEnd,
-  Image,
+  Image as ImageIcon,
   Settings,
   Shirt,
   Sparkles,
@@ -35,7 +35,7 @@ export function AppSidebar({
     <aside className="flex h-full w-full flex-col border-r border-border bg-cream/75 px-4 py-5 backdrop-blur md:w-72">
       <Link href="/closet" className="group flex items-center gap-3 px-2">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-cream shadow-soft transition duration-200 group-hover:-translate-y-0.5">
-          <Image className="h-5 w-5" aria-hidden="true" />
+          <ImageIcon className="h-5 w-5" aria-hidden="true" />
         </span>
         <span>
           <span className="block font-serif text-2xl font-semibold leading-6 text-ink">
