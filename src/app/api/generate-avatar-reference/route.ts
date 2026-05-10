@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { geminiImageGenProvider } from "@/lib/providers/image-gen/gemini";
+import { openaiImageGenProvider } from "@/lib/providers/image-gen/openai";
 import { ImageGenProviderError } from "@/lib/providers/image-gen/types";
 import type { Json } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
@@ -17,6 +17,18 @@ function getBlobExtension(blob: Blob) {
   }
 
   return "png";
+}
+
+function getProviderErrorStatus(error: ImageGenProviderError) {
+  if (error.code === "CONFIGURATION") {
+    return 500;
+  }
+
+  if (error.code === "RATE_LIMIT") {
+    return 429;
+  }
+
+  return 400;
 }
 
 function parseMeasurements(measurements: Json | null) {
@@ -99,7 +111,7 @@ export async function POST() {
       "avatars",
       profile.reference_photo_url
     );
-    const result = await geminiImageGenProvider.generateAvatarReference({
+    const result = await openaiImageGenProvider.generateAvatarReference({
       referencePhotoBlob,
       measurements: parseMeasurements(profile.measurements)
     });
@@ -136,7 +148,7 @@ export async function POST() {
           error: error.message,
           providerPayload: error.providerPayload ?? null
         },
-        { status: error.code === "CONFIGURATION" ? 500 : 400 }
+        { status: getProviderErrorStatus(error) }
       );
     }
 

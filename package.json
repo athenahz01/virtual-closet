@@ -10,7 +10,6 @@
     "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts"
   },
   "dependencies": {
-    "@google/genai": "^2.0.1",
     "@imgly/background-removal": "^1.7.0",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-label": "^2.1.7",
@@ -23,6 +22,7 @@
     "heic2any": "^0.0.4",
     "lucide-react": "^0.511.0",
     "next": "^16.2.6",
+    "openai": "^6.37.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^2.6.0",

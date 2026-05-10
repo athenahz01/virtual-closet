@@ -2,20 +2,27 @@
 
 Research date: May 9, 2026
 
+## Pivot 2026-05-09: OpenAI GPT Image
+
+Swapped Gemini Nano Banana Pro to OpenAI GPT Image (`gpt-image-1`) for both
+avatar reference generation and try-on. Reason: OpenAI's prepaid-credits billing
+model is safer for this personal app than Google Cloud pay-as-you-go. Tradeoff:
+character consistency for try-on is expected to be weaker because OpenAI prompts
+must use "a young woman" framing rather than "the same woman" identity framing.
+
 ## Pivot 2026-05-09
 
 Replaced the 3D avatar path (Ready Player Me / Avaturn) and FASHN try-on
 provider plan with Google Nano Banana Pro, exposed as Gemini 3 Pro Image. The
-app now uses one image-generation provider for both clean studio avatar
-references and outfit try-on images. See the commit log for implementation
-context.
+app later moved to OpenAI GPT Image while keeping the same image-generation
+provider interface. See the commit log for implementation context.
 
 ## Summary table
 
 | Need | Pick | Why | Monthly cost (my usage) |
 | --- | --- | --- | --- |
-| AI try-on | Google Nano Banana Pro (`gemini-3-pro-image-preview`), behind a provider interface | One provider can generate the neutral avatar references and photoreal outfit try-on images from reference photos plus garment photos. | $0 within AI Studio free tier; about $6.70 for 50 paid images at $0.134/image. |
-| Avatar reference | Google Nano Banana Pro (`gemini-3-pro-image-preview`) | Generates clean studio reference images from the Settings selfie, replacing the 3D mascot path. | $0 within AI Studio free tier; about $0.134/image beyond that. |
+| AI try-on | OpenAI GPT Image (`gpt-image-1`), behind a provider interface | One provider can edit from avatar reference images plus garment photos, with prepaid-credit spend control. | About $2.00 for 50 medium-quality 1024x1024 images at about $0.04/image. |
+| Avatar reference | OpenAI GPT Image (`gpt-image-1`) | Generates clean studio reference images from the Settings selfie, replacing the 3D mascot path. | About $0.04/image at medium quality. |
 | Bg removal | Browser-side `@imgly/background-removal`; keep `@bunnio/rembg-web` as license-friendly alternate | Free, private, no server/API bill, works directly in the upload flow. AGPL is acceptable for this personal app; if closed commercial use ever matters, swap. | $0 for 150 items; optional paid rescue with fal BRIA at $0.018/image. |
 
 ## A. AI Try-On
@@ -38,36 +45,38 @@ context.
 | Hugging Face Spaces / Inference Endpoints | ZeroGPU can be free but quota-limited: [3.5 min/day free account, 25 min/day Pro, then $1/10 GPU-min](https://huggingface.co/docs/hub/main/spaces-zerogpu). Dedicated endpoints start around [GPU T4 $0.50/hr, A10G $1/hr](https://huggingface.co/docs/inference-endpoints/en/support/pricing). | Good for demos, not ideal for a private production API unless paid endpoint. | Depends on model. | Spaces are easiest for demos; endpoints are production. | Depends on model. | Medium. |
 | RunPod / Modal self-host | RunPod serverless [A4000 flex $0.00016/sec, L4/A5000/3090 $0.00019/sec, A100 $0.00076/sec](https://docs.runpod.io/serverless/pricing). Modal has [$30/month free credits and per-second GPUs](https://modal.com/pricing?trk=public_post-text). | Best way to keep fallback cost near zero if using FASHN v1.5. | Depends on model. | Need container/service and cold-start handling. | Depends on model. | Medium-high. |
 
-### Recommendation: Google Nano Banana Pro
+### Recommendation: OpenAI GPT Image
 
-Use Google Nano Banana Pro as the active try-on implementation. The pivot
-consolidates avatar reference generation and outfit generation into one image
-model, which is simpler than keeping separate avatar and virtual try-on
-providers. The historical bakeoff table above remains as background research,
-but the app no longer starts from a dedicated VTON API.
+Use OpenAI GPT Image as the active try-on implementation. The OpenAI prepaid
+credit model is a better personal-app billing fit than Google Cloud
+pay-as-you-go, and the existing provider interface keeps avatar reference
+generation and outfit generation under one server-side contract. The historical
+bakeoff table above remains as background research, but the app no longer starts
+from a dedicated VTON API.
 
 Implementation default:
 
 ```ts
-type ImageGenProviderName = "gemini-nano-banana-pro";
+type ImageGenProviderName = "openai-gpt-image";
 ```
 
 The provider accepts the user's generated reference images plus selected garment
-photos. The app-level contract stays provider-shaped, but the old single-garment
-chaining model is removed.
+photos through `images.edit()`. Prompts intentionally use "a young woman" rather
+than identity-preserving "the same woman" phrasing, which reduces consistency but
+avoids a higher rate of policy blocks.
 
 ### Historical fallback: self-hosted VTON
 
-If Gemini proves unreliable for clothing fidelity, revisit self-hosted or hosted
+If GPT Image proves unreliable for clothing fidelity, revisit self-hosted or hosted
 VTON models. Keep this as a bakeoff idea, not active app architecture.
 
 ### Swap path
 
-Keep a single Gemini image-generation interface for now. If pricing or quality
+Keep a single image-generation provider interface for now. If pricing or quality
 changes, run a 20-image bakeoff against:
 
-1. Kling/PiAPI for `upper_input` + `lower_input` in one call.
-2. Google Vertex Virtual Try-On for lower per-image price.
+1. GPT Image newer aliases/models if prepaid billing remains preferable.
+2. Kling/PiAPI for `upper_input` + `lower_input` in one call.
 3. Modal-hosted FASHN v1.5 if free-tier cost matters more than resolution.
 
 No UI rewrite should be required: only the server route and provider implementation change.
@@ -95,9 +104,12 @@ No UI rewrite should be required: only the server route and provider implementat
 | VRoid Studio | Free desktop tool. | VRM/3D anime avatar. | Cute/stylized, but manual and not photo-to-avatar. | Good VRM humanoid rig. | Generally permissive for created models, subject to asset terms. | Medium, manual artist workflow. |
 | Tripo3D / Meshy.ai | Free credits + paid credits vary; current pricing changes often. | Image/text-to-3D meshes, usually GLB/FBX/OBJ. | Better for objects/creatures than likeness-preserving personal avatar. | Rigging may be separate/limited. | Check generated asset terms per plan. | Medium. |
 
-### Recommendation: Google Nano Banana Pro
+### Recommendation: OpenAI GPT Image
 
-Use Google Nano Banana Pro / Gemini 3 Pro Image for the avatar reference flow. The app now generates clean studio reference images from the Settings selfie and measurements, then feeds those same reference images into try-on generation. This removes the separate 3D avatar provider and GLB viewer.
+Use OpenAI GPT Image for the avatar reference flow. The app now generates clean
+studio reference images from the Settings selfie and measurements, then feeds
+those same reference images into try-on generation. This removes the separate 3D
+avatar provider and GLB viewer.
 
 The avatar page now renders generated reference images, not a 3D model. No 3D
 viewer or embedded avatar creator is part of the active plan.
@@ -194,12 +206,11 @@ Baseline personal usage:
 
 | Area | Assumption | Monthly cost |
 | --- | --- | --- |
-| AI try-on | 50 final outfit images/month, Nano Banana Pro at $0.134/image beyond free quota | $6.70 |
-| Avatar reference | 1-4 generated reference images, Nano Banana Pro at $0.134/image beyond free quota | $0.13-$0.54 |
+| AI try-on | 50 final outfit images/month, GPT Image medium quality at about $0.04/image | $2.00 |
+| Avatar reference | 1-4 generated reference images, GPT Image medium quality at about $0.04/image | $0.04-$0.16 |
 | Background removal | 150 wardrobe items processed in browser | $0 |
 | Optional bg-removal rescue | 10 hard images through fal BRIA at $0.018/image | $0.18 |
 
-Expected baseline: **$0/month inside AI Studio's free quota**, not counting
-Supabase/Vercel platform usage. If usage moves to paid Gemini API pricing, 50
-try-ons plus a small reference set is about **$7.24/month** at the current
-planning estimate.
+Expected baseline: about **$2-$3/month** for the planned usage, not counting
+Supabase/Vercel platform usage. OpenAI prepaid credits and the monthly hard cap
+are the preferred spend guardrails for this personal app.

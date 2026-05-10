@@ -6,4 +6,4 @@ export type TryOnCategory =
   | "shoes"
   | "accessory";
 
-export type TryOnProviderName = "gemini-nano-banana-pro";
+export type TryOnProviderName = "openai-gpt-image";

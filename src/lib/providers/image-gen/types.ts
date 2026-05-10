@@ -1,4 +1,4 @@
-export type ImageGenProviderName = "gemini-nano-banana-pro";
+export type ImageGenProviderName = "openai-gpt-image";
 
 export type TryOnGarmentCategory =
   | "top"
@@ -37,7 +37,8 @@ export interface ImageGenProvider {
 export type ImageGenProviderErrorCode =
   | "CONFIGURATION"
   | "NO_IMAGE"
-  | "PROHIBITED_CONTENT";
+  | "PROHIBITED_CONTENT"
+  | "RATE_LIMIT";
 
 export class ImageGenProviderError extends Error {
   code: ImageGenProviderErrorCode;

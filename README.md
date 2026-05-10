@@ -30,7 +30,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
    NEXT_PUBLIC_SITE_URL=http://localhost:3000
    NEXT_PUBLIC_SUPABASE_URL=...
    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-   GEMINI_API_KEY=...
+   OPENAI_API_KEY=...
    ```
 
 3. Apply the Supabase migration:
@@ -74,7 +74,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 | `NEXT_PUBLIC_SITE_URL` | Recommended | App origin for auth redirects. Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon key for browser/server auth clients. |
-| `GEMINI_API_KEY` | Yes for generation | Google AI Studio key for Nano Banana Pro avatar reference and try-on generation. |
+| `OPENAI_API_KEY` | Yes for generation | OpenAI API key for GPT Image avatar reference and try-on generation. |
 
 ## Google OAuth Setup
 
@@ -94,16 +94,17 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
    https://your-vercel-domain.vercel.app/auth/callback
    ```
 
-## Gemini Setup
+## OpenAI Setup
 
-1. Create an API key at [Google AI Studio](https://aistudio.google.com/apikey).
-2. Add it to `.env.local`:
+1. Create an API key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys).
+2. Add prepaid credits at [platform.openai.com/settings/organization/billing](https://platform.openai.com/settings/organization/billing). The current minimum is $10.
+3. Add the key to `.env.local`:
 
    ```bash
-   GEMINI_API_KEY=<your-key>
+   OPENAI_API_KEY=<your-key>
    ```
 
-3. Restart `npm run dev` after changing the environment file.
+4. Restart `npm run dev` after changing the environment file.
 
 ## Phase 1 Scope
 
@@ -127,7 +128,7 @@ Personal wardrobe, avatar, and AI try-on studio for Athena.
 
 ## Phase 3 Scope
 
-- Gemini Nano Banana Pro provider using `gemini-3-pro-image-preview`
+- OpenAI GPT Image provider using `gpt-image-1`
 - Profile-level generated reference image paths
 - Server-side API routes for avatar reference and try-on generation
 
@@ -160,7 +161,7 @@ generations/<user-id>/<generation-id>.png
 
 The approved research lives at [docs/tooling-decisions.md](docs/tooling-decisions.md).
 
-Image generation lives behind the Gemini Nano Banana Pro provider in
-`src/lib/providers/image-gen`. Keep `GEMINI_API_KEY` server-only.
+Image generation lives behind the OpenAI GPT Image provider in
+`src/lib/providers/image-gen`. Keep `OPENAI_API_KEY` server-only.
 
 Private local reference images can live under `private/`; that folder is ignored and should not be committed.

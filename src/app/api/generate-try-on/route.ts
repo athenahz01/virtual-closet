@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { geminiImageGenProvider } from "@/lib/providers/image-gen/gemini";
+import { openaiImageGenProvider } from "@/lib/providers/image-gen/openai";
 import {
   ImageGenProviderError,
   type TryOnGarmentCategory
@@ -27,6 +27,18 @@ function getBlobExtension(blob: Blob) {
   }
 
   return "png";
+}
+
+function getProviderErrorStatus(error: ImageGenProviderError) {
+  if (error.code === "CONFIGURATION") {
+    return 500;
+  }
+
+  if (error.code === "RATE_LIMIT") {
+    return 429;
+  }
+
+  return 400;
 }
 
 function toJson(value: unknown): Json {
@@ -171,7 +183,7 @@ export async function POST(request: Request) {
         category
       }))
     );
-    const result = await geminiImageGenProvider.generateTryOn({
+    const result = await openaiImageGenProvider.generateTryOn({
       referenceAvatarBlobs,
       garmentBlobs,
       pose,
@@ -215,7 +227,7 @@ export async function POST(request: Request) {
       id: generationId,
       user_id: user.id,
       outfit_id: outfitId,
-      provider: geminiImageGenProvider.name,
+      provider: openaiImageGenProvider.name,
       status: "succeeded",
       cost_usd: result.costUsd,
       prompt_payload: toJson(result.providerPayload),
@@ -237,7 +249,7 @@ export async function POST(request: Request) {
       id: generationId,
       user_id: user.id,
       outfit_id: outfitId,
-      provider: geminiImageGenProvider.name,
+      provider: openaiImageGenProvider.name,
       status: "failed",
       cost_usd: 0,
       prompt_payload: toJson({ itemIds, pose, background }),
@@ -252,7 +264,7 @@ export async function POST(request: Request) {
           error: error.message,
           providerPayload: error.providerPayload ?? null
         },
-        { status: error.code === "CONFIGURATION" ? 500 : 400 }
+        { status: getProviderErrorStatus(error) }
       );
     }
 
