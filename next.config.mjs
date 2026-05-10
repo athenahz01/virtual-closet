@@ -5,14 +5,13 @@ const supabaseHost = supabaseUrl ? new URL(supabaseUrl).hostname : undefined;
 const nextConfig = {
   images: {
     remotePatterns: supabaseHost
-      ? [
-          {
-            protocol: "https",
-            hostname: supabaseHost,
-            pathname: "/storage/v1/object/**"
-          }
-        ]
+      ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/**" }]
       : []
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "10mb"
+    }
   }
 };
 
